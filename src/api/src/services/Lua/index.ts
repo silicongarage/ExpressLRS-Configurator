@@ -77,9 +77,6 @@ export default class LuaService implements ILua {
   }
 
   async loadLuaFromLocal(localPath: string): Promise<string | null> {
-    if (!localPath) {
-      throw new Error('localPath is required for Local firmware source');
-    }
     const luaDirectory = path.join(localPath, 'lua');
 
     if (!fs.existsSync(luaDirectory)) {
@@ -139,9 +136,6 @@ export default class LuaService implements ILua {
         );
         break;
       case FirmwareSource.Local:
-        if (!args.localPath) {
-          throw new Error('localPath is required for Local firmware source');
-        }
         luaScript = await this.loadLuaFromLocal(args.localPath);
         break;
       case FirmwareSource.GitPullRequest:

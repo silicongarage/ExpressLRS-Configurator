@@ -58,9 +58,6 @@ export default class GitTargetsService extends TargetsLoader {
       );
 
       let availableTargets: string[] = [];
-      if (!gitRepository?.srcFolder) {
-        throw new Error('gitRepository srcFolder is missing');
-      }
       const srcFolder
         = gitRepository.srcFolder === '/' ? '' : `${gitRepository.srcFolder}/`;
       switch (args.source) {
@@ -100,9 +97,6 @@ export default class GitTargetsService extends TargetsLoader {
           availableTargets = await loadTargetsFromDirectory(prResult.path);
           break;
         case FirmwareSource.Local:
-          if (!args.localPath) {
-            throw new Error('localPath is required for Local firmware source');
-          }
           availableTargets = await loadTargetsFromDirectory(
             path.join(args.localPath, 'targets'),
           );

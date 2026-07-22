@@ -130,13 +130,6 @@ export default class BinaryFlashingStrategyService implements FlashingStrategy {
 
   async isCompatible(params: IsCompatibleArgs, gitRepository: GitRepository) {
     if (
-      !gitRepository?.url
-      || !params?.gitTag
-    ) {
-      return true;
-    }
-
-    if (
       gitRepository.url.toLowerCase()
       === 'https://github.com/expresslrs/backpack'.toLowerCase()
       && params.source === FirmwareSource.GitTag

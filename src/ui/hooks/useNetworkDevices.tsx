@@ -39,7 +39,7 @@ export default function useNetworkDevices() {
       const multicastDnsDevicesCopy = new Map<string, MulticastDnsInformation>(
         networkDevices,
       );
-      multicastDnsDevicesListData.availableMulticastDnsDevicesList?.forEach(
+      multicastDnsDevicesListData.availableMulticastDnsDevicesList.forEach(
         (item) => {
           multicastDnsDevicesCopy.set(item.name, item);
         },
