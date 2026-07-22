@@ -5,6 +5,9 @@ import extractTargets from './extractTargets';
 const loadTargetsFromDirectory = async (
   localPath: string,
 ): Promise<string[]> => {
+  if (!localPath) {
+    throw new Error('localPath is required');
+  }
   if (!fs.existsSync(localPath)) {
     const errorMessage = `directory ${localPath} does not exist`;
     throw new Error(errorMessage);

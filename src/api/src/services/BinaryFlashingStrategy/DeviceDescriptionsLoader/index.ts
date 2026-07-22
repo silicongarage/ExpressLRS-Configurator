@@ -175,6 +175,7 @@ export default class DeviceDescriptionsLoader {
 
     if (
       args.source === FirmwareSource.Local
+      && args.localPath
       && existsSync(path.join(args.localPath, 'hardware'))
     ) {
       return path.join(args.localPath, 'hardware');
@@ -242,6 +243,9 @@ export default class DeviceDescriptionsLoader {
         );
         return prResult.path;
       case FirmwareSource.Local:
+        if (!args.localPath) {
+          throw new Error('localPath is required for Local firmware source');
+        }
         return path.join(args.localPath, 'hardware');
       default:
         throw new Error(

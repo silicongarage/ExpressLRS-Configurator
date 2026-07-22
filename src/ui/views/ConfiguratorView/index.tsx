@@ -223,6 +223,11 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
 
   const [deviceTargets, setDeviceTargets] = useState<Device[] | null>(null);
 
+  // Runtime guard: catch any unexpected undefined values early
+  if (deviceTargets === undefined) {
+    console.error('deviceTargets is undefined on mount - state corruption detected');
+  }
+
   const [
     fetchDeviceTargets,
     { loading: loadingTargets, error: targetsResponseError },
@@ -233,7 +238,7 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
   const device = useMemo(() => {
     return deviceTargets?.find((d) => {
       return d.targets.find((target) => target.id === deviceTarget?.id);
-    });
+    }) ?? null;
   }, [deviceTarget, deviceTargets]);
 
   useEffect(() => {
@@ -243,39 +248,195 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
     ) {
       setDeviceTargets(null);
     } else {
-      fetchDeviceTargets({
-        variables: {
-          source: firmwareVersionData.source as FirmwareSource,
-          gitBranch: firmwareVersionData.gitBranch!,
-          gitTag: firmwareVersionData.gitTag!,
-          gitCommit: firmwareVersionData.gitCommit!,
-          localPath: firmwareVersionData.localPath!,
-          gitPullRequest: firmwareVersionData.gitPullRequest,
-          gitRepository: {
-            url: gitRepository.url,
-            owner: gitRepository.owner,
-            repositoryName: gitRepository.repositoryName,
-            rawRepoUrl: gitRepository.rawRepoUrl,
-            srcFolder: gitRepository.srcFolder,
-            hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
-          },
-        },
-      })
-        .then((response) => {
-          if (response.data?.availableFirmwareTargets) {
-            setDeviceTargets([
-              ...response.data.availableFirmwareTargets,
-            ] as Device[]);
-          } else {
-            setDeviceTargets(null);
-          }
-        })
-        .catch((err: unknown) => {
-          console.error(
-            'failed to fetch device targets for the firmware source',
-            err,
-          );
-        });
+      const gitRepositoryInput = {
+        url: gitRepository.url,
+        owner: gitRepository.owner,
+        repositoryName: gitRepository.repositoryName,
+        rawRepoUrl: gitRepository.rawRepoUrl,
+        srcFolder: gitRepository.srcFolder,
+        hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
+      };
+
+      switch (firmwareVersionData.source) {
+        case FirmwareSource.GitBranch:
+          fetchDeviceTargets({
+            variables: {
+              source: FirmwareSource.GitBranch,
+              gitBranch: firmwareVersionData.gitBranch!,
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          })
+            .then((response) => {
+              if (response.error) {
+                const errorMsg = response.error.message || String(response.error);
+                console.error('availableFirmwareTargets query returned error:', errorMsg);
+                setDeviceTargets(null);
+                return;
+              }
+              if (response.data?.availableFirmwareTargets) {
+                setDeviceTargets([
+                  ...response.data.availableFirmwareTargets,
+                ] as Device[]);
+              } else {
+                setDeviceTargets(null);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(
+                'failed to fetch device targets for the firmware source',
+                err,
+              );
+              setDeviceTargets(null);
+            });
+          break;
+        case FirmwareSource.GitCommit:
+          fetchDeviceTargets({
+            variables: {
+              source: FirmwareSource.GitCommit,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: firmwareVersionData.gitCommit!,
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          })
+            .then((response) => {
+              if (response.error) {
+                const errorMsg = response.error.message || String(response.error);
+                console.error('availableFirmwareTargets query returned error:', errorMsg);
+                setDeviceTargets(null);
+                return;
+              }
+              if (response.data?.availableFirmwareTargets) {
+                setDeviceTargets([
+                  ...response.data.availableFirmwareTargets,
+                ] as Device[]);
+              } else {
+                setDeviceTargets(null);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(
+                'failed to fetch device targets for the firmware source',
+                err,
+              );
+              setDeviceTargets(null);
+            });
+          break;
+        case FirmwareSource.GitTag:
+          fetchDeviceTargets({
+            variables: {
+              source: FirmwareSource.GitTag,
+              gitBranch: '',
+              gitTag: firmwareVersionData.gitTag!,
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          })
+            .then((response) => {
+              if (response.error) {
+                const errorMsg = response.error.message || String(response.error);
+                console.error('availableFirmwareTargets query returned error:', errorMsg);
+                setDeviceTargets(null);
+                return;
+              }
+              if (response.data?.availableFirmwareTargets) {
+                setDeviceTargets([
+                  ...response.data.availableFirmwareTargets,
+                ] as Device[]);
+              } else {
+                setDeviceTargets(null);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(
+                'failed to fetch device targets for the firmware source',
+                err,
+              );
+              setDeviceTargets(null);
+            });
+          break;
+        case FirmwareSource.GitPullRequest:
+          fetchDeviceTargets({
+            variables: {
+              source: FirmwareSource.GitPullRequest,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: firmwareVersionData.gitPullRequest,
+              gitRepository: gitRepositoryInput,
+            },
+          })
+            .then((response) => {
+              if (response.error) {
+                const errorMsg = response.error.message || String(response.error);
+                console.error('availableFirmwareTargets query returned error:', errorMsg);
+                setDeviceTargets(null);
+                return;
+              }
+              if (response.data?.availableFirmwareTargets) {
+                setDeviceTargets([
+                  ...response.data.availableFirmwareTargets,
+                ] as Device[]);
+              } else {
+                setDeviceTargets(null);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(
+                'failed to fetch device targets for the firmware source',
+                err,
+              );
+              setDeviceTargets(null);
+            });
+          break;
+        case FirmwareSource.Local:
+          fetchDeviceTargets({
+            variables: {
+              source: FirmwareSource.Local,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: firmwareVersionData.localPath!,
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          })
+            .then((response) => {
+              if (response.error) {
+                const errorMsg = response.error.message || String(response.error);
+                console.error('availableFirmwareTargets query returned error:', errorMsg);
+                setDeviceTargets(null);
+                return;
+              }
+              if (response.data?.availableFirmwareTargets) {
+                setDeviceTargets([
+                  ...response.data.availableFirmwareTargets,
+                ] as Device[]);
+              } else {
+                setDeviceTargets(null);
+              }
+            })
+            .catch((err: unknown) => {
+              console.error(
+                'failed to fetch device targets for the firmware source',
+                err,
+              );
+              setDeviceTargets(null);
+            });
+          break;
+        default:
+          setDeviceTargets(null);
+          break;
+      }
     }
   }, [gitRepository, firmwareVersionData, fetchDeviceTargets]);
 
@@ -351,25 +512,94 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
         userDefineOptions: [],
       });
     } else {
-      fetchOptions({
-        variables: {
-          target: deviceTarget.name,
-          source: firmwareVersionData.source as FirmwareSource,
-          gitBranch: firmwareVersionData.gitBranch!,
-          gitTag: firmwareVersionData.gitTag!,
-          gitCommit: firmwareVersionData.gitCommit!,
-          localPath: firmwareVersionData.localPath!,
-          gitPullRequest: firmwareVersionData.gitPullRequest,
-          gitRepository: {
-            url: gitRepository.url,
-            owner: gitRepository.owner,
-            repositoryName: gitRepository.repositoryName,
-            rawRepoUrl: gitRepository.rawRepoUrl,
-            srcFolder: gitRepository.srcFolder,
-            hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
-          },
-        },
-      });
+      console.log('[ConfiguratorView fetchOptions] gitRepository:', gitRepository);
+      const gitRepositoryInput = {
+        url: gitRepository.url,
+        owner: gitRepository.owner,
+        repositoryName: gitRepository.repositoryName,
+        rawRepoUrl: gitRepository.rawRepoUrl,
+        srcFolder: gitRepository.srcFolder,
+        hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
+      };
+      console.log('[ConfiguratorView fetchOptions] gitRepositoryInput:', gitRepositoryInput);
+
+      switch (firmwareVersionData.source) {
+        case FirmwareSource.GitBranch:
+          fetchOptions({
+            variables: {
+              target: deviceTarget.name,
+              source: FirmwareSource.GitBranch,
+              gitBranch: firmwareVersionData.gitBranch!,
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitCommit:
+          fetchOptions({
+            variables: {
+              target: deviceTarget.name,
+              source: FirmwareSource.GitCommit,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: firmwareVersionData.gitCommit!,
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitTag:
+          fetchOptions({
+            variables: {
+              target: deviceTarget.name,
+              source: FirmwareSource.GitTag,
+              gitBranch: '',
+              gitTag: firmwareVersionData.gitTag!,
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitPullRequest:
+          fetchOptions({
+            variables: {
+              target: deviceTarget.name,
+              source: FirmwareSource.GitPullRequest,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: firmwareVersionData.gitPullRequest,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.Local:
+          fetchOptions({
+            variables: {
+              target: deviceTarget.name,
+              source: FirmwareSource.Local,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: firmwareVersionData.localPath!,
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        default:
+          setDeviceOptionsFormData({
+            userDefineOptions: [],
+          });
+          break;
+      }
     }
   }, [deviceTarget, firmwareVersionData, gitRepository, fetchOptions]);
 
@@ -447,7 +677,7 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
     }
     if (
       deviceTarget.flashingMethod === FlashingMethod.BetaflightPassthrough
-      && device.platform === 'esp8285'
+      && device?.platform === 'esp8285'
     ) {
       return true;
     }
@@ -476,24 +706,86 @@ const ConfiguratorView: FunctionComponent<ConfiguratorViewProps> = (props) => {
 
   useEffect(() => {
     if (firmwareVersionData && isTX && hasLuaScript) {
-      fetchLuaScript({
-        variables: {
-          source: firmwareVersionData.source as FirmwareSource,
-          gitBranch: firmwareVersionData.gitBranch!,
-          gitTag: firmwareVersionData.gitTag!,
-          gitCommit: firmwareVersionData.gitCommit!,
-          localPath: firmwareVersionData.localPath!,
-          gitPullRequest: firmwareVersionData.gitPullRequest,
-          gitRepository: {
-            url: gitRepository.url,
-            owner: gitRepository.owner,
-            repositoryName: gitRepository.repositoryName,
-            rawRepoUrl: gitRepository.rawRepoUrl,
-            srcFolder: gitRepository.srcFolder,
-            hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
-          },
-        },
-      });
+      console.log('[ConfiguratorView fetchLuaScript] gitRepository:', gitRepository);
+      const gitRepositoryInput = {
+        url: gitRepository.url,
+        owner: gitRepository.owner,
+        repositoryName: gitRepository.repositoryName,
+        rawRepoUrl: gitRepository.rawRepoUrl,
+        srcFolder: gitRepository.srcFolder,
+        hardwareArtifactUrl: gitRepository.hardwareArtifactUrl,
+      };
+      console.log('[ConfiguratorView fetchLuaScript] gitRepositoryInput:', gitRepositoryInput);
+
+      switch (firmwareVersionData.source) {
+        case FirmwareSource.GitBranch:
+          fetchLuaScript({
+            variables: {
+              source: FirmwareSource.GitBranch,
+              gitBranch: firmwareVersionData.gitBranch!,
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitCommit:
+          fetchLuaScript({
+            variables: {
+              source: FirmwareSource.GitCommit,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: firmwareVersionData.gitCommit!,
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitTag:
+          fetchLuaScript({
+            variables: {
+              source: FirmwareSource.GitTag,
+              gitBranch: '',
+              gitTag: firmwareVersionData.gitTag!,
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.GitPullRequest:
+          fetchLuaScript({
+            variables: {
+              source: FirmwareSource.GitPullRequest,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: '',
+              gitPullRequest: firmwareVersionData.gitPullRequest,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        case FirmwareSource.Local:
+          fetchLuaScript({
+            variables: {
+              source: FirmwareSource.Local,
+              gitBranch: '',
+              gitTag: '',
+              gitCommit: '',
+              localPath: firmwareVersionData.localPath!,
+              gitPullRequest: null,
+              gitRepository: gitRepositoryInput,
+            },
+          });
+          break;
+        default:
+          break;
+      }
     }
   }, [gitRepository, firmwareVersionData, fetchLuaScript, isTX, hasLuaScript]);
 

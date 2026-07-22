@@ -91,6 +91,9 @@ export default class GitUserDefinesLoader implements UserDefinesLoader {
           const tagData = await fs.promises.readFile(tagResult.path, 'utf8');
           return extractCompatibleKeys(tagData);
         case FirmwareSource.Local:
+          if (!userDefineFilters.localPath) {
+            throw new Error('localPath is required for Local firmware source');
+          }
           const data = await fs.promises.readFile(
             path.join(userDefineFilters.localPath, 'user_defines.txt'),
             'utf8',

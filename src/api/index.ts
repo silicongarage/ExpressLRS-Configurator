@@ -241,6 +241,16 @@ export default class ApiServer {
     const apolloServer = new ApolloServer({
       schema,
       introspection: true,
+      formatError: (err) => {
+        const stack = (err.extensions?.exception as unknown as { stacktrace?: string })?.stacktrace;
+        console.error('[GraphQL error]', err.message, stack);
+        return {
+          message: err.message,
+          locations: err.locations,
+          path: err.path,
+          extensions: err.extensions,
+        };
+      },
       plugins: [
         {
           async serverWillStart() {
