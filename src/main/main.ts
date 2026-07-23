@@ -186,8 +186,9 @@ const createWindow = async () => {
   };
 
   logger.log('trying to get port');
-  const port = await ApiServer.getPort(3500);
-  logger.log(`received unused port`, { port });
+  const existingPort = localServer.getPort();
+  const port = existingPort ?? await ApiServer.getPort(3500);
+  logger.log(`received unused port`, { port, reused: !!existingPort });
 
   logger.log('starting server...');
   const firmwaresPath = path.join(userDataDirectory, 'firmwares', 'github');

@@ -9,7 +9,7 @@ import {
   Tabs,
   TextField,
 } from '@mui/material';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import semver from 'semver';
 import { SxProps, Theme } from '@mui/system';
@@ -73,6 +73,8 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
   const { onChange, data, gitRepository } = props;
 
   const { t } = useTranslation();
+
+  const storageLoaded = useRef(false);
 
   const [firmwareSource, setFirmwareSource] = useState<FirmwareSource>(
     data?.source || FirmwareSource.GitTag,
@@ -290,6 +292,7 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
           if (result.gitPullRequest)
             setCurrentGitPullRequest(result.gitPullRequest);
         }
+        storageLoaded.current = true;
       })
       .catch((err) => {
         console.error('failed to get firmware source', err);
@@ -351,6 +354,7 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
   ]);
 
   useEffect(() => {
+    if (!storageLoaded.current) return;
     const updatedData = {
       source: firmwareSource,
       gitBranch: currentGitBranch,

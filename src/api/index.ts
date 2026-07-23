@@ -54,11 +54,21 @@ export default class ApiServer {
 
   httpServer: http.Server | undefined;
 
+  private serverPort: number | undefined;
+
+  private schemaBuilt = false;
+
+  /** Returns the port the server is listening on, or undefined if not started. */
+  getPort(): number | undefined {
+    return this.serverPort;
+  }
+
   static async getPort(port: number | undefined): Promise<number> {
     return getPort({ port });
   }
 
   async buildContainer(config: IConfig, logger: LoggerService): Promise<void> {
+    Container.reset();
     const pubSub = createPubSub();
     Container.set([{ id: ConfigToken, value: config }]);
     Container.set([{ id: PubSubToken, value: pubSub }]);
@@ -194,6 +204,9 @@ export default class ApiServer {
     logger: LoggerService,
     port: number,
   ): Promise<http.Server> {
+    if (this.schemaBuilt) {
+      return this.httpServer!;
+    }
     await this.buildContainer(config, logger);
     this.app = express();
     this.app.use(
@@ -263,6 +276,9 @@ export default class ApiServer {
     this.app.use('/graphql', expressMiddleware(apolloServer));
 
     this.httpServer = this.httpServer.listen({ port });
+
+    this.serverPort = port;
+    this.schemaBuilt = true;
 
     return this.httpServer;
   }
