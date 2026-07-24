@@ -74,6 +74,8 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
 
   const { t } = useTranslation();
 
+  // Guards against the save effect firing before localStorage has been read.
+  // Without it, the effect saves an empty state and overwrites the correct value.
   const storageLoaded = useRef(false);
 
   const [firmwareSource, setFirmwareSource] = useState<FirmwareSource>(
@@ -292,6 +294,7 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
           if (result.gitPullRequest)
             setCurrentGitPullRequest(result.gitPullRequest);
         }
+        // Signal that stored state is ready; save effect may now run
         storageLoaded.current = true;
       })
       .catch((err) => {
@@ -354,6 +357,7 @@ const FirmwareVersionForm: FunctionComponent<FirmwareVersionCardProps> = (
   ]);
 
   useEffect(() => {
+    // Skip until localStorage has been read to avoid overwriting with empty state
     if (!storageLoaded.current) return;
     const updatedData = {
       source: firmwareSource,

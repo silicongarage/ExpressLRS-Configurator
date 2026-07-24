@@ -54,11 +54,15 @@ export default class ApiServer {
 
   httpServer: http.Server | undefined;
 
+  // Tracked to avoid starting a second server on a new port when macOS
+  // closes and reopens the window (the original server keeps running).
   private serverPort: number | undefined;
 
+  // buildSchema() must only run once per ApiServer instance.
+  // Calling it a second time corrupts type-graphql's @Arg decorator mapping.
   private schemaBuilt = false;
 
-  /** Returns the port the server is listening on, or undefined if not started. */
+  // Exposes the current listening port so the main process can reuse it.
   getPort(): number | undefined {
     return this.serverPort;
   }
@@ -68,6 +72,7 @@ export default class ApiServer {
   }
 
   async buildContainer(config: IConfig, logger: LoggerService): Promise<void> {
+    // Clear stale decorators left by a previous buildSchema() call
     Container.reset();
     const pubSub = createPubSub();
     Container.set([{ id: ConfigToken, value: config }]);
@@ -204,6 +209,7 @@ export default class ApiServer {
     logger: LoggerService,
     port: number,
   ): Promise<http.Server> {
+    // Server already running (macOS Close→Open reuses the process)
     if (this.schemaBuilt) {
       return this.httpServer!;
     }

@@ -186,6 +186,8 @@ const createWindow = async () => {
   };
 
   logger.log('trying to get port');
+  // Reuse the existing server port if the API server is already running
+  // (macOS Close→Open creates a new window without exiting the process)
   const existingPort = localServer.getPort();
   const port = existingPort ?? await ApiServer.getPort(3500);
   logger.log(`received unused port`, { port, reused: !!existingPort });

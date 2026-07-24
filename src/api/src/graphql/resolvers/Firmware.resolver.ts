@@ -36,6 +36,8 @@ export default class FirmwareResolver {
 
   @Query(() => [Device])
   async availableFirmwareTargets(
+    // Explicit @Arg per field — @Args(() => TargetArgs) lost its mapping
+    // after buildSchema ran a second time on macOS Close→Open
     @Arg('gitRepository', () => GitRepository) gitRepository: GitRepository,
     @Arg('source', () => FirmwareSource) source: FirmwareSource,
     @Arg('gitTag', () => String) gitTag: string,
@@ -57,6 +59,7 @@ export default class FirmwareResolver {
 
   @Query(() => [UserDefine])
   async targetDeviceOptions(
+    // Same pattern — explicit @Arg per field to avoid schema corruption
     @Arg('gitRepository', () => GitRepository) gitRepository: GitRepository,
     @Arg('target', () => String) target: string,
     @Arg('source', () => FirmwareSource) source: FirmwareSource,
